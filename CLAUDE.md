@@ -2,7 +2,7 @@
 
 Unofficial, read-only MCP server over public services of the Iranian National Tax Administration: tax.gov.ir,
 stuffid.tax.gov.ir (goods/service IDs) and regulation.tax.gov.ir (tax regulation database). Copies the layout of
-`../iran-news-mcp`; keep them in step. Not yet published (no commit, tag or PyPI release). API maps: `../tax-gov/`,
+`../iran-news-mcp`; keep them in step. On GitHub (`sepehr071/iran-tax-mcp`, public), not yet released (no tag or PyPI release). API maps: `../tax-gov/`,
 `../moadian/` (stuffid + e-invoice API), `../tax-regulation/`, `../intamedia/` (not used by the server yet).
 
 ## Layout
