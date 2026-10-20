@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.sepehr071/iran-tax-mcp",
   "title": "Iran Tax",
-  "description": "Unofficial read-only Iranian tax lookups: goods/service IDs and VAT, activity codes, property values, tax laws and circulars.",
+  "description": "Unofficial read-only Iranian tax: goods IDs and VAT, activity codes, property values, tax laws.",
   "repository": {
     "url": "https://github.com/sepehr071/iran-tax-mcp",
     "source": "github"
