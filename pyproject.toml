@@ -1,6 +1,6 @@
 [project]
 name = "iran-tax-mcp"
-version = "0.1.1"
+version = "0.1.2"
 description = "Unofficial read-only MCP server for Iranian tax services: goods/service IDs and VAT, activity codes, property values, tax laws and circulars."
 readme = "README.md"
 license = "MIT"
