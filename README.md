@@ -11,6 +11,7 @@ e-invoice goods IDs and VAT rates, activity codes, property transaction values, 
 [![CI](https://github.com/sepehr071/iran-tax-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/sepehr071/iran-tax-mcp/actions/workflows/ci.yml)
 [![MCP Registry](https://img.shields.io/badge/MCP_Registry-io.github.sepehr071%2Firan--tax--mcp-7c3aed)](https://registry.modelcontextprotocol.io/?q=iran-tax-mcp)
 [![License: MIT](https://img.shields.io/badge/license-MIT-16a34a)](https://github.com/sepehr071/iran-tax-mcp/blob/main/LICENSE)
+[![mcpfarsi](https://mcpfarsi.ir/badge/iran-tax.svg)](https://mcpfarsi.ir/servers/iran-tax/)
 
 [![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_iran--tax--mcp-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=iran-tax&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22iran-tax-mcp%22%5D%7D)
 
@@ -319,6 +320,7 @@ Releases: bump the version in `pyproject.toml` and `server.json`, then push a `v
 - [iran-news-mcp](https://github.com/sepehr071/iran-news-mcp) for Iranian news
 - [tgju-mcp](https://github.com/sepehr071/tgju-mcp) for dollar, gold and coin prices
 - [tsetmc-mcp](https://github.com/sepehr071/tsetmc-mcp) for the Tehran Stock Exchange
+- Listed on [mcpfarsi.ir](https://mcpfarsi.ir/servers/iran-tax/), the Persian MCP marketplace
 
 ## Disclaimer
 

@@ -29,6 +29,7 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/sepehr071/iran-tax-mcp"
 Issues = "https://github.com/sepehr071/iran-tax-mcp/issues"
+Website = "https://mcpfarsi.ir/servers/iran-tax/"
 
 [project.scripts]
 iran-tax-mcp = "iran_tax_mcp.server:main"
