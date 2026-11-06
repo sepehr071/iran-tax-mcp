@@ -96,25 +96,21 @@ async def tx_goods_search(
         str,
         Field(
             min_length=2,
-            description="Part of the goods/service description in Persian, matched as one phrase (e.g. 'لپ تاپ', 'خدمات حسابداری'), or a 13-digit ID.",
+            description="Persian description phrase (e.g. 'لپ تاپ') or a 13-digit ID.",
             examples=["لپ تاپ"],
         ),
     ],
-    kind: Annotated[
-        Literal["goods", "service", "all"], Field(description="Goods IDs, service IDs or both.", examples=["goods"])
-    ] = "all",
+    kind: Annotated[Literal["goods", "service", "all"], Field(examples=["goods"])] = "all",
     general_only: Annotated[
         bool,
-        Field(description="Only general IDs (شناسه عمومی), the ones most sellers put on e-invoices.", examples=[True]),
+        Field(description="Only general IDs (شناسه عمومی).", examples=[True]),
     ] = False,
-    limit: Annotated[int, Field(ge=1, le=LIMIT_MAX, description=f"Max rows (1-{LIMIT_MAX}).", examples=[10])] = 10,
+    limit: Annotated[int, Field(ge=1, le=LIMIT_MAX, examples=[10])] = 10,
 ) -> dict:
     """Find e-invoice goods/service IDs (شناسه کالا و خدمات) and their VAT rate by description or ID.
 
-    Source: the tax administration's ID system stuffid.tax.gov.ir. Active general IDs come first. Each row has the
-    13-digit id, description, vat_percent, type (general/specific, domestic/imported) and dates; `expired: true`
-    means the ID can no longer be used. The first search for a phrase takes 15-30 s (the site builds a file);
-    repeats are cached for an hour. `total` counts every match, not only the rows returned.
+    Active general IDs come first; `expired: true` means unusable. First search for a phrase takes 15-30 s,
+    repeats are cached. `total` counts all matches.
     """
     q = query.strip()
     code, title = (q, "") if q.isdigit() else ("", q)
@@ -123,4 +119,4 @@ async def tx_goods_search(
         rows = [r for r in rows if "عمومی" in (r.get("Type") or "")]
     today = jalali(date.today())
     top = sorted(rows, key=lambda r: _rank(r, today, title))[:limit]
-    return {"query": q, "kind": kind, "total": len(rows), "count": len(top), "items": [_row(r, today) for r in top]}
+    return {"total": len(rows), "items": [_row(r, today) for r in top]}

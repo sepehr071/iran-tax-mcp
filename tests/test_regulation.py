@@ -56,7 +56,7 @@ async def test_search_sends_type_fields_and_offset(client, routes):
     d = (
         await client.call_tool("tx_regulations_search", {"query": "مالیات حقوق", "type": "regulation", "page": 3})
     ).structured_content
-    assert d["total"] == 7357 and d["pages"] == 368 and d["count"] == 2
+    assert d["total"] == 7357 and d["pages"] == 368 and len(d["items"]) == 2
     q = query(routes.calls[0])
     assert q["act"] == ["mq"] and q["s281009734"] == ["مالیات حقوق"] and q["fr"] == ["40"]
     assert q["s281010109[]"] == [regulation.FIELD_TITLE, regulation.FIELD_TEXT]

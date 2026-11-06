@@ -21,7 +21,7 @@ def test_parse_intacodes():
     assert len(rows) == 17
     r = rows[0]
     assert r["code"] == "1020180" and r["vat_status"] == "مشمول مرحله دوم" and r["business_group"] == "صنعت نان"
-    assert r["profit_ratio"] == 1.6 and r["gross_profit_to_sales_ratio"] == 2.08 and r["year"] == 1404
+    assert r["profit_ratio"] == 1.6 and r["gross_profit_to_sales_ratio"] == 2.08
     assert (
         r["status"] == "فعال" and r["eight_groups"].endswith("...[cut]") and len(r["eight_groups"]) == 88
     )  # 80 + the 8-char marker
@@ -42,7 +42,7 @@ async def test_activity_codes_posts_form_state_and_year(client, routes):
     routes[f"POST {INTA}"] = page
     r = await client.call_tool("tx_activity_codes", {"query": "گندم", "limit": 2})
     d = r.structured_content
-    assert d["year"] == 1404 and d["total"] == 17 and d["count"] == 2 and d["commercial"] is True
+    assert d["year"] == 1404 and d["total"] == 17 and len(d["items"]) == 2
     sent = form(routes.calls[-1])
     assert sent["txtIntaCodeDescription"] == "گندم" and sent["txtIntaCode"] == ""
     assert sent["ddlYearForIntaCode"] == "1404" and sent["ddlIntaCodeTejari"] == "1"
@@ -90,7 +90,7 @@ async def test_property_value_without_result_is_an_error(client, routes):
 async def test_faq_search(client, routes):
     routes["POST tax.gov.ir/handler/SearchFAQ.ashx"] = fixture("faq.json")
     d = (await client.call_tool("tx_faq_search", {"query": "صورتحساب"})).structured_content
-    assert d["count"] == 1 and d["items"][0]["url"] == "https://tax.gov.ir/action/do/faq/47/2253"
+    assert len(d["items"]) == 1 and d["items"][0]["url"] == "https://tax.gov.ir/action/do/faq/47/2253"
     assert d["items"][0]["question"].startswith("در چه صورتی")
 
 
@@ -107,4 +107,4 @@ async def test_max_limit_activity_codes_stay_under_15kb(client, routes):
         "</table></span>", f"<tr class='gridOddClass'>{body}</tr>" * 40 + "</table></span>", 1
     ).encode()
     r = await client.call_tool("tx_activity_codes", {"query": "گندم", "limit": taxgov.LIMIT_MAX})
-    assert r.structured_content["count"] == taxgov.LIMIT_MAX and len(r.content[0].text.encode()) < 15_000
+    assert len(r.structured_content["items"]) == taxgov.LIMIT_MAX and len(r.content[0].text.encode()) < 15_000

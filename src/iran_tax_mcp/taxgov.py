@@ -79,7 +79,6 @@ def parse_intacodes(page: str) -> list[dict]:
             row = dict(zip(INTACODE_COLS, cells, strict=True))
             for k in ("profit_ratio", "gross_profit_to_sales_ratio"):
                 row[k] = _num(row[k])
-            row["year"] = _num(row["year"])
             row["eight_groups"] = clip(row["eight_groups"], n=80)
             out.append(row)
     return out
@@ -108,28 +107,24 @@ async def tx_activity_codes(
         str,
         Field(
             min_length=2,
-            description="Part of the activity title in Persian (e.g. 'نرم افزار', 'گندم'), or an activity code (digits).",
+            description="Persian activity title (e.g. 'نرم افزار') or an activity code (digits).",
             examples=["نرم افزار"],
         ),
     ],
     year: Annotated[
         int | None,
-        Field(description="Tax year (Jalali), e.g. 1404. Default: the latest year offered.", examples=[1404]),
+        Field(description="Jalali tax year; default latest.", examples=[1404]),
     ] = None,
     commercial: Annotated[
         bool,
-        Field(
-            description="True: commercial activities (تجاری). False: non-commercial ones (غیرتجاری). The site has no 'both'.",
-            examples=[True],
-        ),
+        Field(description="True = تجاری, False = غیرتجاری (no 'both').", examples=[True]),
     ] = True,
-    limit: Annotated[int, Field(ge=1, le=LIMIT_MAX, description=f"Max rows (1-{LIMIT_MAX}).", examples=[10])] = 10,
+    limit: Annotated[int, Field(ge=1, le=LIMIT_MAX, examples=[10])] = 10,
 ) -> dict:
     """Find tax activity codes (کد فعالیت / اینتاکد) with their VAT status and official profit ratios.
 
-    Source: tax.gov.ir SearchIntaCode. Each row has the code, title, activity type (production/trade/services),
-    vat_status (which VAT stage the activity falls in, or not subject), business group, profit_ratio (نسبت سود
-    فعالیت, %) and gross_profit_to_sales_ratio (%), used for presumptive assessments. The ratios are not tax rates.
+    Rows carry vat_status, profit_ratio and gross_profit_to_sales_ratio (%, for presumptive assessments; not tax
+    rates). `total` counts all matches.
     """
     url = f"{BASE}/action/do/SearchIntaCode"
     page, state = await http.get_form(url)
@@ -156,33 +151,25 @@ async def tx_activity_codes(
     }
     rows = parse_intacodes((await http.request("POST", url, data=form)).text)
     return {
-        "query": q,
         "year": int(y),
-        "commercial": commercial,
         "total": len(rows),
-        "count": min(limit, len(rows)),
         "items": rows[:limit],
     }
 
 
 @tool("Property transaction value")
 async def tx_property_value(
-    latitude: Annotated[
-        float, Field(ge=25, le=40, description="Latitude of the property (WGS84).", examples=[35.6892])
-    ],
-    longitude: Annotated[
-        float, Field(ge=44, le=64, description="Longitude of the property (WGS84).", examples=[51.389])
-    ],
+    latitude: Annotated[float, Field(ge=25, le=40, description="WGS84 latitude.", examples=[35.6892])],
+    longitude: Annotated[float, Field(ge=44, le=64, description="WGS84 longitude.", examples=[51.389])],
     year: Annotated[
         int | None,
-        Field(description="Booklet year (Jalali), 1396 to the current year. Default: the latest.", examples=[1404]),
+        Field(description="Jalali booklet year (1396+); default latest.", examples=[1404]),
     ] = None,
 ) -> dict:
     """Return the official property transaction value (ارزش معاملاتی املاک) per square metre at a map point.
 
-    Source: tax.gov.ir GetAddressGeoLocation. Gives the booklet block and row, residential/office/commercial
-    values and rent values in rial per m² (text 'عدم وجود اطلاعات' when the booklet has none), and the tax offices
-    for that address. The caller must supply coordinates; this server does not geocode addresses.
+    Gives block/row, residential/office/commercial and rent values in rial per m² ('عدم وجود اطلاعات' = none) and
+    the tax offices. Needs coordinates; no geocoding.
     """
     url = f"{BASE}/action/do/GetAddressGeoLocation/30/{latitude}/{longitude}"
     _, state = await http.get_form(url)
@@ -218,12 +205,12 @@ async def tx_property_value(
 async def tx_faq_search(
     query: Annotated[
         str,
-        Field(min_length=2, description="Keywords in Persian, e.g. 'اظهارنامه', 'ماده 169'.", examples=["اظهارنامه"]),
+        Field(min_length=2, description="Persian keywords.", examples=["اظهارنامه"]),
     ],
 ) -> dict:
     """Search the tax administration's official FAQ (پرسش های متداول) and return matching questions with links.
 
-    Source: tax.gov.ir SearchFAQ. Returns question titles and their page url; open the url for the answer.
+    Returns question titles and page urls; open the url for the answer.
     """
     r = await http.request("POST", f"{BASE}/handler/SearchFAQ.ashx", json={"q": query.strip(), "checkRequest": "1"})
     page = (r.json() or {}).get("contentHTML") or ""
@@ -231,4 +218,4 @@ async def tx_faq_search(
         {"question": clip(_text(t), n=300), "url": BASE + h.replace("/pages/action/faq/", "/action/do/faq/")}
         for h, t in re.findall(r"href=([^\s>]+)[^>]*>(.*?)</a>", page, re.S)
     ]
-    return {"query": query, "total": len(items), "count": min(len(items), FAQ_MAX), "items": items[:FAQ_MAX]}
+    return {"total": len(items), "items": items[:FAQ_MAX]}

@@ -45,7 +45,7 @@ META_KEYS = {
 
 DocType = Annotated[
     Literal["law", "regulation", "ruling", "opinion", "correspondence", "glossary"],
-    Field(description="Document type, as returned by tx_regulations_search.", examples=["law"]),
+    Field(description="Type from tx_regulations_search.", examples=["law"]),
 ]
 
 
@@ -145,27 +145,25 @@ async def tx_regulations_search(
         str,
         Field(
             min_length=2,
-            description="Words in Persian, e.g. 'ماده 169 مکرر', 'مالیات حقوق', 'سفته بازی', or a circular number like '200/1405/59'.",
+            description="Persian words (e.g. 'مالیات حقوق') or a circular number like '200/1405/59'.",
             examples=["مالیات حقوق"],
         ),
     ],
     type: Annotated[
         Literal["all", "law", "regulation", "ruling", "opinion", "correspondence", "glossary"],
         Field(
-            description="law = قوانین, regulation = مقررات/بخشنامه/دستورالعمل/آیین نامه, ruling = آرای دیوان و هیئت ها, "
-            "opinion = نظریه ها, correspondence = مکاتبات, glossary = واژگان.",
+            description="law=قوانین, regulation=مقررات/بخشنامه/آیین نامه, ruling=آرا, opinion=نظریه, "
+            "correspondence=مکاتبات, glossary=واژگان.",
             examples=["regulation"],
         ),
     ] = "all",
-    title_only: Annotated[
-        bool, Field(description="Match the title (and number) only, not the full text.", examples=[False])
-    ] = False,
-    page: Annotated[int, Field(ge=1, description="Result page, 20 per page, newest first.", examples=[1])] = 1,
+    title_only: Annotated[bool, Field(description="Match title/number only.", examples=[False])] = False,
+    page: Annotated[int, Field(ge=1, description="20 per page.", examples=[1])] = 1,
 ) -> dict:
     """Search the official tax regulation database (laws, circulars, rulings, opinions), newest first.
 
-    Source: regulation.tax.gov.ir (سامانه جامع مقررات مالیاتی). Each item has id and type (pass both to
-    tx_regulation_text), title, number, issuer, date (Jalali) and status (معتبر = in force, غیر معتبر = not).
+    Items have id and type (pass both to tx_regulation_text), title, number, issuer, Jalali date and status
+    (معتبر = in force).
     """
     params: list[tuple[str, str]] = [
         ("act", TYPES[type]),
@@ -178,12 +176,8 @@ async def tx_regulations_search(
         params.insert(3, ("s281010109[]", FIELD_TEXT))
     total, items = parse_search((await http.request("GET", f"{BASE}/lwse", params=params)).text)
     return {
-        "query": query,
-        "type": type,
         "total": total,
-        "page": page,
         "pages": -(-total // PAGE_SIZE),
-        "count": len(items),
         "items": items,
     }
 
@@ -194,7 +188,7 @@ async def tx_regulation_text(
         str,
         Field(
             pattern=r"^txs\d+$",
-            description="Document id from tx_regulations_search, e.g. txs5000060480 (VAT law) or txs5000060569 (direct tax law).",
+            description="Id from tx_regulations_search (txs5000060480 = VAT law, txs5000060569 = direct tax law).",
             examples=["txs5000060480"],
         ),
     ],
@@ -202,20 +196,19 @@ async def tx_regulation_text(
     article: Annotated[
         str,
         Field(
-            description="Optional heading to read only that part, e.g. 'ماده 2', 'ماده 169 مکرر', 'فصل سوم'. Empty = whole document.",
+            description="Heading to read only that part, e.g. 'ماده 2', 'ماده 169 مکرر'. Empty = whole document.",
             examples=["ماده 2"],
         ),
     ] = "",
     part: Annotated[
         int,
-        Field(ge=1, description=f"Part number for long texts ({CHUNK} characters each); see `parts`.", examples=[1]),
+        Field(ge=1, description="Part number for long texts; see `parts`.", examples=[1]),
     ] = 1,
 ) -> dict:
     """Return the full text of one tax law, circular, ruling or opinion, or just one article of it.
 
-    Source: regulation.tax.gov.ir. Gives title, kind, number, dates, issuer, the official PDF link and the text in
-    reading order with each article heading on its own line. Long laws come in parts: `parts` > 1 means call again
-    with part=2, 3, ... For one article of a big law (the direct tax law is ~300 articles) pass `article`.
+    Includes the PDF link. Long texts come in parts: if `parts` > 1 call again with part=2, 3... For one article of
+    a big law pass `article`.
     """
     ty = TYPES[type]
 

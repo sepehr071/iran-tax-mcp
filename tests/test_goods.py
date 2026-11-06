@@ -91,4 +91,4 @@ async def test_max_limit_reply_stays_under_15kb(client, routes):
         [f"28000{i:08d},{long},10,مشمول,1405-01-01,,1405-01-01,1405-01-01,شناسه اختصاصی وارداتی," for i in range(200)]
     )
     r = await client.call_tool("tx_goods_search", {"query": "لپ تاپ", "limit": goods.LIMIT_MAX})
-    assert r.structured_content["count"] == goods.LIMIT_MAX and len(r.content[0].text.encode()) < 15_000
+    assert len(r.structured_content["items"]) == goods.LIMIT_MAX and len(r.content[0].text.encode()) < 15_000
