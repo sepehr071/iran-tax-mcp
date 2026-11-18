@@ -15,7 +15,7 @@ e-invoice goods IDs and VAT rates, activity codes, property transaction values, 
 
 [![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_iran--tax--mcp-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=iran-tax&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22iran-tax-mcp%22%5D%7D)
 
-[For AI agents](#for-ai-agents) · [Why](#why) · [What it can do](#what-it-can-do) · [Quick start](#quick-start) · [Tools](#tools) · [How it works](#how-it-works) · [Good to know](#good-to-know) · [FAQ](#faq) · [Configuration](#configuration) · [فارسی](#فارسی) · [Development](#development)
+[For AI agents](#for-ai-agents) · [Why](#why) · [What it can do](#what-it-can-do) · [Quick start](#quick-start) · [Tools](#tools) · [Good to know](#good-to-know) · [FAQ](#faq) · [Configuration](#configuration) · [فارسی](#فارسی) · [Development](#development)
 
 ---
 
@@ -166,23 +166,6 @@ It is a standard stdio MCP server: run `uvx iran-tax-mcp`, or `pip install iran-
 | `tx_faq_search` | The tax administration's FAQ: matching questions with links (`query`). |
 
 All 6 tools are annotated `readOnlyHint: true`.
-
-## How it works
-
-```text
-  AI agent  (Claude, Cursor, Copilot, ...)
-      │
-      │  MCP over stdio
-      ▼
-  iran-tax-mcp  (runs on your machine)
-      │
-      │  HTTPS
-      ├──────▶  tax.gov.ir              activity codes, property values, FAQ
-      ├──────▶  stuffid.tax.gov.ir      goods/service IDs and VAT
-      └──────▶  regulation.tax.gov.ir   laws, circulars, rulings
-```
-
-`iran-tax-mcp` runs locally and reads the same public pages and endpoints the three sites use. It has no hosted server in between and no API key. Requests go out through a Chrome-impersonating client, at most 4 at a time with a little jitter, retried up to twice on timeouts, network errors, 5xx and 429. It only talks to the allowed tax hosts and only reads.
 
 ## Good to know
 
